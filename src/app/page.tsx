@@ -1,82 +1,139 @@
-import Link from "next/link";
+"use client";
 
-import { CreatePost } from "@/app/_components/create-post";
-import { getServerAuthSession } from "@/server/auth";
-import { api } from "@/trpc/server";
+import { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import {
+  encryptPassword,
+  Algorithm,
+  EncryptionResult,
+} from "../../../passcrypt/utils/algos";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const session = await getServerAuthSession();
+export default function Component() {
+  const [password, setPassword] = useState("");
+  const [algorithm, setAlgorithm] = useState<Algorithm>("SHA-256");
+  const [encryptedPassword, setEncryptedPassword] = useState("");
+  const [hashingDetails, setHashingDetails] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const { encryptedPassword, hashingDetails } = await encryptPassword(
+      password,
+      algorithm,
+    );
+    setEncryptedPassword(encryptedPassword);
+    setHashingDetails(hashingDetails);
+  };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
-            </div>
-          </Link>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-2xl text-white">
-            {hello ? hello.greeting : "Loading tRPC query..."}
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-900">
+      <div className="w-full max-w-md overflow-y-auto rounded-lg bg-white/20 shadow-lg backdrop-blur-lg">
+        <div className="space-y-1 p-6">
+          <h1 className="text-2xl font-bold text-white">Password Encryption</h1>
+          <p className="text-gray-300">
+            Securely encrypt your password using industry-standard algorithms.
           </p>
-
-          <div className="flex flex-col items-center justify-center gap-4">
-            <p className="text-center text-2xl text-white">
-              {session && <span>Logged in as {session.user?.name}</span>}
-            </p>
-            <Link
-              href={session ? "/api/auth/signout" : "/api/auth/signin"}
-              className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+        </div>
+        <form className="space-y-4 pr-6 pl-6 pb-6" onSubmit={handleSubmit}>
+          <div>
+            <Label htmlFor="password" className="text-white">
+              Password
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mt-1 w-full rounded-md bg-white/20 px-3 py-2 text-white backdrop-blur-lg placeholder:text-gray-100"
+            />
+          </div>
+          <div>
+            <Label htmlFor="algorithm" className="text-white">
+              Encryption Algorithm
+            </Label>
+            <Select
+              value={algorithm}
+              onValueChange={(value) => setAlgorithm(value as Algorithm)}
             >
-              {session ? "Sign out" : "Sign in"}
-            </Link>
+              <SelectTrigger className="mt-1 w-full rounded-md bg-white/20 px-3 py-2 text-white backdrop-blur-lg">
+                <SelectValue placeholder="Select algorithm" />
+              </SelectTrigger>
+              <SelectContent className="rounded-md bg-white/20 text-white backdrop-blur-lg">
+                <SelectItem value="SHA-256">SHA-256</SelectItem>
+                <SelectItem value="Bcrypt">Bcrypt</SelectItem>
+                <SelectItem value="Argon2">Argon2</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            type="submit"
+            className="w-full rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+          >
+            Encrypt Password
+          </Button>
+        </form>
+        <div className="flex h-[200px] flex-col justify-evenly rounded-md bg-white/20 p-4 backdrop-blur-lg">
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-white">Encrypted Password:</span>
+            <Drawer>
+              <DrawerTrigger className="font-mono text-sm text-gray-200 cursor-pointer">
+                <Button variant={"link"} className="p-0 text-gray-200 font-mono h-5">Click to View</Button>
+              </DrawerTrigger>
+              <DrawerContent className="bg-white/20 backdrop-blur-lg border-none">
+                <DrawerHeader className="p-4">
+                  <DrawerTitle className="text-white">Encrypted Password</DrawerTitle>
+                  <DrawerClose className="text-white hover:text-gray-300" />
+                </DrawerHeader>
+                <DrawerDescription className="flex items-center justify-center p-4 text-center text-white">
+                  <span className="font-mono text-sm">
+                    {encryptedPassword}
+                  </span>
+                </DrawerDescription>
+                <DrawerFooter className="p-4">
+                  <Button
+                    className="w-full rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                    onClick={() => {
+                      navigator.clipboard.writeText(encryptedPassword);
+                    }}
+                  >
+                    Copy
+                  </Button>
+                </DrawerFooter>
+              </DrawerContent>
+            </Drawer>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-white">Hashing Algorithm:</span>
+            <span className="font-mono text-sm text-gray-200">{algorithm}</span>
+          </div>
+          <div className="flex grid grid-cols-2 items-center justify-between">
+            <span className="font-medium text-white">Encryption Details:</span>
+            <span className="justify-self-end break-all font-mono text-sm text-gray-200">
+              {hashingDetails}
+            </span>
           </div>
         </div>
-
-        <CrudShowcase />
       </div>
-    </main>
-  );
-}
-
-async function CrudShowcase() {
-  const session = await getServerAuthSession();
-  if (!session?.user) return null;
-
-  const latestPost = await api.post.getLatest();
-
-  return (
-    <div className="w-full max-w-xs">
-      {latestPost ? (
-        <p className="truncate">Your most recent post: {latestPost.name}</p>
-      ) : (
-        <p>You have no posts yet.</p>
-      )}
-
-      <CreatePost />
     </div>
   );
 }

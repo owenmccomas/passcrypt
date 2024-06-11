@@ -13,9 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   encryptPassword,
-  Algorithm,
   // EncryptionResult,
 } from "@/utils/algos";
+import type {Algorithm} from "@/utils/algos";
 import {
   Drawer,
   DrawerClose,
@@ -112,8 +112,8 @@ export default function Component() {
                 <DrawerFooter className="p-4">
                   <Button
                     className="w-full rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-                    onClick={() => {
-                      navigator.clipboard.writeText(encryptedPassword);
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(encryptedPassword);
                     }}
                   >
                     Copy

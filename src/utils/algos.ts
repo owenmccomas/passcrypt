@@ -29,7 +29,7 @@ export const encryptPassword = async (
       break;
     case "Bcrypt":
       const bcryptSalt = await bcrypt.genSalt(10);
-      encryptedPassword = await bcrypt.hash(password, bcryptSalt);
+      encryptedPassword = (await bcrypt.hash(password, bcryptSalt).catch(() => "")) || "";
       hashingDetails = "Bcrypt, 10 rounds";
       break;
     // case "Argon2":
@@ -44,7 +44,7 @@ export const encryptPassword = async (
     //     "hex"
     //   )}$${argon2Hash}`;
     //   hashingDetails = "Argon2id, 65536 KB memory, 3 iterations, 4 parallelism";
-      break;
+      // break;
     default:
       encryptedPassword = "Invalid algorithm";
       hashingDetails = "N/A";

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import {
   encryptPassword,
   Algorithm,
-  EncryptionResult,
+  // EncryptionResult,
 } from "@/utils/algos";
 import {
   Drawer,

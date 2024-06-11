@@ -15,7 +15,7 @@ import {
   encryptPassword,
   Algorithm,
   EncryptionResult,
-} from "../../../passcrypt/utils/algos";
+} from "@/utils/algos";
 import {
   Drawer,
   DrawerClose,
